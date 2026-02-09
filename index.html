@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tentacion Space</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/v4-shims.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <!-- 顶部背景区域 -->
+    <header class="header-section">
+        <div class="background-image" style="background-image: url('./assets/images/background.jpg')"></div>
+        <div class="header-content">
+            <!-- 头像 -->
+            <div class="avatar-container">
+                <img src="./assets/images/avatar.jpg" alt="头像" class="avatar">
+            </div>
+            <!-- 个人信息 -->
+            <div class="profile-info">
+                <h1 class="name">XXXYJade</h1>
+                <p class="bio">探索技术与创意的无限可能</p>
+                <div class="social-links">
+                    <a href="https://github.com/XXXYJade17" class="social-link"><i class="fa fa-github"></i></a>
+                    <a href="#" class="social-link"><i class="fa fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fa fa-linkedin"></i></a>
+                    <a href="#" class="social-link"><i class="fa fa-codepen"></i></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="main-content">
+        <!-- 文章列表侧边栏 -->
+        <aside class="articles-sidebar">
+            <div class="sidebar-header">
+                <h2 class="sidebar-title">文章列表</h2>
+                <button id="toggleSidebar" class="toggle-sidebar">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+            </div>
+
+            <!-- 搜索框 -->
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="搜索文章..." class="search-input">
+                <button class="search-button"><i class="fa fa-search"></i></button>
+            </div>
+
+            <!-- 文章列表 -->
+            <div class="articles-list" id="articlesList">
+                <!-- 文章项将通过JavaScript动态生成 -->
+            </div>
+
+            <!-- 分页控件 -->
+            <div class="pagination" id="pagination">
+                <!-- 分页按钮将通过JavaScript动态生成 -->
+            </div>
+        </aside>
+
+        <!-- 文章内容区域 -->
+        <section class="article-content">
+            <div class="article-container">
+                <div class="article-header">
+                    <h1 class="article-title" id="articleTitle">欢迎来到我的博客</h1>
+                    <p class="article-meta" id="articleMeta">选择一篇文章开始阅读</p>
+                </div>
+
+                <div class="article-body" id="articleBody">
+                    <div class="welcome-content">
+                        <div class="welcome-icon">
+                            <i class="fa fa-lightbulb-o"></i>
+                        </div>
+                        <h2>欢迎来到 Tentacion Space</h2>
+                        <p>这里是我分享技术见解、创意作品和学习心得的空间。</p>
+                        <p>从左侧选择一篇文章开始阅读，或者使用搜索功能找到你感兴趣的内容。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer-section">
+        <p>&copy; 2026 Tentacion Space. 保留所有权利。</p>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="backToTop" class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
