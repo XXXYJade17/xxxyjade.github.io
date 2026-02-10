@@ -1,5 +1,3 @@
-# JDBC
-
 **JDBC**（Java DataBase Connectivity）：使用 **Java** 语言操作关系型数据库的一套 **API**。
 
 ```xml

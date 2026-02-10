@@ -6,5 +6,13 @@
         "author": "XXXYJade",
         "category": "技术",
         "file": "jdbc.md"
+    },
+    {
+        "id": "2",
+        "title": "GIT",
+        "date": "2026-02-09",
+        "author": "XXXYJade",
+        "category": "技术",
+        "file": "git.md"
     }
 ]
