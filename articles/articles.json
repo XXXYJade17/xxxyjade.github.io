@@ -1,14 +1,6 @@
 [
     {
         "id": "1",
-        "title": "Git仓库",
-        "date": "2026-02-09",
-        "author": "XXXYJade",
-        "category": "技术",
-        "file": "git.md"
-    },
-    {
-        "id": "2",
         "title": "JDBC",
         "date": "2026-02-09",
         "author": "XXXYJade",

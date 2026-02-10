@@ -604,10 +604,12 @@ body {
 .article-content ol {
     margin-bottom: 1rem;
     padding-left: 2rem;
+    list-style-type: decimal;
 }
 
 .article-content li {
     margin-bottom: 0.5rem;
+    list-style-type: inherit;
 }
 
 .article-content img {

@@ -166,10 +166,10 @@ class BlogApp {
     initEventListeners() {
         // 侧边栏切换
         this.setupSidebarToggle();
-        
+
         // 重新设置搜索功能
         this.setupSearch();
-        
+
         // 设置键盘快捷键
         this.setupKeyboardShortcuts();
     }
@@ -183,11 +183,11 @@ class BlogApp {
             // 移除可能存在的旧事件监听器
             toggleSidebar.replaceWith(toggleSidebar.cloneNode(true));
             const newToggleSidebar = document.getElementById('toggleSidebar');
-            
+
             newToggleSidebar.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 sidebar.classList.toggle('collapsed');
                 articleContent.classList.toggle('expanded');
 
@@ -200,10 +200,10 @@ class BlogApp {
                     icon.classList.remove('fa-chevron-right');
                     icon.classList.add('fa-chevron-left');
                 }
-                
+
                 console.log('侧边栏状态已切换');
             });
-            
+
             console.log('侧边栏切换功能已初始化');
         } else {
             console.error('无法找到侧边栏相关元素:', { toggleSidebar, sidebar, articleContent });
@@ -407,7 +407,15 @@ class BlogApp {
 
         // 解析Markdown内容
         try {
-            const htmlContent = marked.parse(article.content);
+            const htmlContent = marked.parse(article.content, {
+                breaks: true, // 启用换行
+                gfm: true, // 启用GitHub Flavored Markdown
+                headerIds: true, // 启用标题ID
+                mangle: true, // 启用链接混淆
+                sanitize: false, // 禁用HTML sanitization
+                smartLists: true, // 启用智能列表
+                smartypants: true, // 启用智能标点
+            });
             articleBody.innerHTML = htmlContent;
 
             // 平滑滚动到文章标题，而不是文章内容
