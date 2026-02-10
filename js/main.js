@@ -402,7 +402,6 @@ class BlogApp {
             <span><i class="fa fa-calendar"></i> ${article.date}</span>
             <span><i class="fa fa-folder"></i> ${article.category}</span>
             <span><i class="fa fa-pencil"></i> ${article.author}</span>
-            <span><i class="fa fa-clock-o"></i> ${this.readingTime(article.content)}</span>
         `;
 
         // 解析Markdown内容
@@ -435,13 +434,6 @@ class BlogApp {
                 </div>
             `;
         }
-    }
-
-    readingTime(content) {
-        const wordsPerMinute = 200;
-        const wordCount = content.split(/\s+/).length;
-        const minutes = Math.ceil(wordCount / wordsPerMinute);
-        return `${minutes} 分钟阅读`;
     }
 
     highlightCode() {
