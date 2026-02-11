@@ -144,6 +144,15 @@ class BlogApp {
                 }
             }));
 
+            // 按id降序排列（转为数字避免字符串排序异常）
+            this.articles.sort((a, b) => {
+                // 确保id是数字类型进行比较
+                const idA = Number(a.id);
+                const idB = Number(b.id);
+                // 倒序：b - a；如果要正序则是 a - b
+                return idB - idA;
+            });
+
             this.filteredArticles = [...this.articles];
         } catch (error) {
             console.error('加载文章列表失败:', error);
