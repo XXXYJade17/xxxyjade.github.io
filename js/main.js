@@ -39,11 +39,26 @@ class BlogApp {
     constructor() {
         this.articles = [];
         this.currentPage = 1;
-        this.articlesPerPage = 5;
+        this.articlesPerPage = 8;
         this.currentArticle = null;
         this.filteredArticles = [];
         this.searchQuery = '';
+        this.initMarkdown();
         // 不在这里直接调用init，而是在DOMContentLoaded中调用
+    }
+
+    // 初始化Markdown渲染器
+    initMarkdown() {
+        // 配置marked选项
+        marked.setOptions({
+            breaks: true,
+            gfm: true,
+            headerIds: true,
+            mangle: false,
+            sanitize: false,
+            smartLists: true,
+            smartypants: true,
+        });
     }
 
     async init() {
@@ -383,6 +398,132 @@ class BlogApp {
         pagination.appendChild(nextButton);
     }
 
+    // 生成目录
+    generateTableOfContents(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const headings = doc.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+        if (headings.length === 0) return '';
+
+        let toc = '<div class="table-of-contents">\n';
+        let stack = [];
+
+        headings.forEach((heading, index) => {
+            const level = parseInt(heading.tagName[1]);
+            const text = heading.textContent;
+            // 获取heading的ID，如果没有则生成一个
+            const id = heading.id || `heading-${index}`;
+
+            // 处理嵌套级别：弹出比当前级别高的栈项
+            while (stack.length > 0 && stack[stack.length - 1] >= level) {
+                toc += '</li>\n</ul>\n';
+                stack.pop();
+            }
+
+            // 如果栈为空，创建根列表
+            if (stack.length === 0) {
+                toc += '<ul class="toc-list">\n';
+                stack.push(level);
+                toc += `<li><a href="#${id}">${text}</a>\n`;
+            } else if (level > stack[stack.length - 1]) {
+                // 打开嵌套列表
+                toc += '<ul class="toc-list">\n';
+                toc += `<li><a href="#${id}">${text}</a>\n`;
+                stack.push(level);
+            } else {
+                // 同级别项
+                toc += `</li>\n<li><a href="#${id}">${text}</a>\n`;
+            }
+        });
+
+        // 关闭所有剩余的列表
+        while (stack.length > 0) {
+            toc += '</li>\n</ul>\n';
+            stack.pop();
+        }
+
+        toc += '</div>';
+        return toc;
+    }
+
+    // 从实际DOM生成目录
+    generateTableOfContentsFromDOM() {
+        const headings = document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4, #articleBody h5, #articleBody h6');
+
+        if (headings.length === 0) return '';
+
+        // 先计算总项数，决定是否需要折叠
+        let itemCount = 0;
+        headings.forEach((heading) => {
+            if (heading.id) itemCount++;
+        });
+
+        let toc = '<div class="table-of-contents';
+        if (itemCount > 5) {
+            toc += ' is-collapsible';
+        }
+        toc += '">\n';
+
+        // 添加展开/收起按钮（如果需要折叠）
+        if (itemCount > 5) {
+            toc += '<div class="toc-toggle">\n';
+            toc += '<span class="toc-title">📖 目录</span>\n';
+            toc += '<button class="toc-toggle-btn" aria-label="展开/收起目录">△</button>\n';
+            toc += '</div>\n';
+        }
+
+        let stack = [];
+        let itemIndex = 0;
+
+        toc += '<div class="toc-content">\n';
+
+        headings.forEach((heading) => {
+            const level = parseInt(heading.tagName[1]);
+            const text = heading.textContent;
+            const id = heading.id;
+
+            if (!id) return; // 跳过没有ID的标题
+
+            itemIndex++;
+            let itemClass = '';
+            // 超过5项的部分项添加'collapsed-item'类，默认隐藏
+            if (itemCount > 5 && itemIndex > 5) {
+                itemClass = ' class="collapsed-item"';
+            }
+
+            // 处理嵌套级别：弹出比当前级别高的栈项
+            while (stack.length > 0 && stack[stack.length - 1] >= level) {
+                toc += '</li>\n</ul>\n';
+                stack.pop();
+            }
+
+            // 如果栈为空，创建根列表
+            if (stack.length === 0) {
+                toc += '<ul class="toc-list">\n';
+                stack.push(level);
+                toc += `<li${itemClass}><a href="#${id}">${text}</a>\n`;
+            } else if (level > stack[stack.length - 1]) {
+                // 打开嵌套列表
+                toc += '<ul class="toc-list">\n';
+                toc += `<li${itemClass}><a href="#${id}">${text}</a>\n`;
+                stack.push(level);
+            } else {
+                // 同级别项
+                toc += `</li>\n<li${itemClass}><a href="#${id}">${text}</a>\n`;
+            }
+        });
+
+        // 关闭所有剩余的列表
+        while (stack.length > 0) {
+            toc += '</li>\n</ul>\n';
+            stack.pop();
+        }
+
+        toc += '</div>\n</div>';
+        return toc;
+    }
+
     async loadArticle(article) {
         this.currentArticle = article;
 
@@ -415,16 +556,33 @@ class BlogApp {
 
         // 解析Markdown内容
         try {
-            const htmlContent = marked.parse(article.content, {
-                breaks: true, // 启用换行
-                gfm: true, // 启用GitHub Flavored Markdown
-                headerIds: true, // 启用标题ID
-                mangle: true, // 启用链接混淆
-                sanitize: false, // 禁用HTML sanitization
-                smartLists: true, // 启用智能列表
-                smartypants: true, // 启用智能标点
-            });
+            let htmlContent = marked.parse(article.content);
+
+            // 先将HTML设置到DOM中（此时[TOC]还未替换）
             articleBody.innerHTML = htmlContent;
+
+            // 为所有标题添加ID（确保TOC链接能找到目标）
+            this.addHeadingIds();
+
+            // 现在生成TOC，使用已经添加ID的标题
+            const toc = this.generateTableOfContentsFromDOM();
+
+            // 替换DOM中的[TOC]
+            const tocPlaceholder = articleBody.querySelector('.table-of-contents') ||
+                (articleBody.innerHTML.includes('[TOC]') ? document.evaluate(
+                    "//text()[contains(., '[TOC]')]",
+                    articleBody,
+                    null,
+                    XPathResult.FIRST_ORDERED_NODE_TYPE,
+                    null
+                ).singleNodeValue : null);
+
+            if (articleBody.innerHTML.includes('[TOC]')) {
+                articleBody.innerHTML = articleBody.innerHTML.replace('[TOC]', toc);
+            }
+
+            // 添加目录链接点击事件和平滑滚动
+            this.setupTableOfContentsLinks();
 
             // 平滑滚动到文章标题，而不是文章内容
             articleTitle.scrollIntoView({
@@ -443,6 +601,71 @@ class BlogApp {
                 </div>
             `;
         }
+    }
+
+    // 为所有标题添加ID
+    addHeadingIds() {
+        const headings = document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4, #articleBody h5, #articleBody h6');
+        headings.forEach((heading, index) => {
+            if (!heading.id) {
+                // 基于标题文本生成ID
+                let id = heading.textContent
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^\w\s-]/g, '') // 移除特殊字符
+                    .replace(/\s+/g, '-'); // 空格转为连接符
+
+                // 如果ID为空或重复，使用备用ID
+                if (!id || document.getElementById(id)) {
+                    id = `heading-${index}`;
+                }
+
+                heading.id = id;
+            }
+        });
+    }
+
+    // 设置目录链接功能
+    setupTableOfContentsLinks() {
+        // 设置展开/收起按钮
+        const tocToggleBtn = document.querySelector('.toc-toggle-btn');
+        const toc = document.querySelector('.table-of-contents');
+
+        if (tocToggleBtn && toc) {
+            tocToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toc.classList.toggle('expanded');
+                tocToggleBtn.textContent = toc.classList.contains('expanded') ? '▽' : '△';
+            });
+        }
+
+        // 设置目录链接点击事件
+        const tocLinks = document.querySelectorAll('.table-of-contents a');
+        tocLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const href = link.getAttribute('href');
+                const targetId = href.substring(1);
+                const targetElement = document.getElementById(targetId);
+
+                if (targetElement) {
+                    // 平滑滚动到目标元素
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+
+                    // 添加高亮效果
+                    targetElement.classList.add('highlight-heading');
+                    setTimeout(() => {
+                        targetElement.classList.remove('highlight-heading');
+                    }, 2000);
+
+                    // 更新URL hash
+                    window.history.pushState(null, null, href);
+                }
+            });
+        });
     }
 
     highlightCode() {
